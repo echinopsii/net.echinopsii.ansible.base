@@ -1,0 +1,69 @@
+---
+- name: ensure git is at the latest version
+  yum: name=git state=latest
+  when: provisioning
+
+- name: add sslVerify=false
+  command: git config --global http.sslverify "false"
+  when: provisioning
+
+- name: add /ECHINOPSII/ansible directory
+  command: mkdir -p /ECHINOPSII/ansible
+  ignore_errors: yes
+  when: provisioning
+
+- name: clone net.echinopsii.docker.base
+  git: repo=http://stash.echinopsii.net/scm/necii/docker.base.git dest=/ECHINOPSII/ansible/docker.base clone=yes update=yes
+  when: provisioning
+
+- name: chown /ECHINOPSII/ansible
+  command: chown -R ansible.ansible /ECHINOPSII/ansible
+  when: provisioning
+
+- name: build fedora.21.systemd docker image
+  docker_image: path="/ECHINOPSII/ansible/docker.base/fedora.21.systemd" name="echinopsii/fedora.21.systemd" state=present
+  when: provisioning
+
+- name: remove fedora.21.systemd docker image
+  docker_image: name="echinopsii/fedora.21.systemd" state=absent
+  when: not provisioning
+
+- name: build fedora.21.systemd.rabbitmq docker image
+  docker_image: path="/ECHINOPSII/ansible/docker.base/fedora.21.systemd.rabbitmq" name="echinopsii/fedora.21.systemd.rabbitmq" state=build
+  when: provisioning
+
+- name: remove fedora.21.systemd.rabbitmq docker image
+  docker_image: name="echinopsii/fedora.21.systemd.rabbitmq" state=absent
+  when: not provisioning
+
+- name: clean docker env
+  command: /usr/bin/dockerKlean
+  ignore_errors: yes
+
+- name: define rbmq container name
+  set_fact: 
+    rbmq_container_name: "{{ hostvars[inventory_hostname]['nodeName'] }}"
+
+- name: run fedora.21.systemd.rabbitmq docker container
+  docker: 
+   name: "{{rbmq_container_name}}"
+   hostname: "{{rbmq_container_name + '.' + ansible_fqdn}}"
+   privileged: yes
+   volumes: /sys/fs/cgroup:/sys/fs/cgroup:ro
+   ports:
+   - "127.0.0.1:5000:5000" 
+   - "{{ansible_eth0.ipv4.address + ':15672:15672'}}"
+   - "{{ansible_eth0.ipv4.address + ':5672:5672'}}"
+   - "{{ansible_eth0.ipv4.address + ':1833:1833'}}"
+   - "{{ansible_eth0.ipv4.address + ':61613:61613'}}"
+   - "{{ansible_eth0.ipv4.address + ':4369:4369'}}"
+   - "{{ansible_eth0.ipv4.address + ':44001:44001'}}"
+   image: echinopsii/fedora.21.systemd.rabbitmq
+  when: provisioning
+
+- name: remove fedora.21.systemd.rabbitmq docker container
+  docker:
+   name: "{{rbmq_container_name}}"
+   image: echinopsii/fedora.21.systemd.rabbitmq
+   state: absent
+  when: not provisioning

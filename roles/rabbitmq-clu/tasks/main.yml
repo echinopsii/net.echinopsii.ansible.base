@@ -1,0 +1,31 @@
+---
+- name: copy setupHost.sh
+  copy: src=../files/setupHost.sh dest=/tmp/ owner=root group=docker mode=0700
+
+- name: define rabbitmq_clu_nodes.json
+  shell: echo "{{hostvars[inventory_hostname]['rabbitmq_clu_nodes']}}" > /tmp/rabbitmq_clu_nodes.json
+
+- name: reformat rabbitmq_clu_nodes.json
+  shell: sed -i "s#'#\"#g" /tmp/rabbitmq_clu_nodes.json
+
+- name: set cluster hostname in container
+  shell: /tmp/setupHost.sh
+
+- name: copy connect.sh
+  copy: src=../files/connect.sh dest=/tmp/ owner=root group=docker mode=0700
+  when: not hostvars[inventory_hostname]['rabbitmq_clu_primarynode'] == hostvars[inventory_hostname]['nodeName']
+
+- name: define rabbitmq_clu_name.json
+  shell: echo "{{hostvars[inventory_hostname]['rabbitmq_clu_name']}}" > /tmp/rabbitmq_clu_name.json
+  when: not hostvars[inventory_hostname]['rabbitmq_clu_primarynode'] == hostvars[inventory_hostname]['nodeName']
+
+- name: reformat rabbitmq_clu_nodes.json
+  shell: sed -i "s#'#\"#g" /tmp/rabbitmq_clu_name.json
+  when: not hostvars[inventory_hostname]['rabbitmq_clu_primarynode'] == hostvars[inventory_hostname]['nodeName']
+
+- name: connect node to primary cluster node
+  shell: /tmp/connect.sh
+  when: not hostvars[inventory_hostname]['rabbitmq_clu_primarynode'] == hostvars[inventory_hostname]['nodeName']
+
+- name: clean
+  shell: rm /tmp/*.sh /tmp/*.json

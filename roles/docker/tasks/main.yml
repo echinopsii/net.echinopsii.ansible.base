@@ -1,0 +1,33 @@
+---
+- name: upgrade all packages
+  yum: name=* state=latest
+
+- name: ensure docker is at the latest version
+  yum: name=docker-io state=latest
+
+- name: ensure docker is enabled
+  service: name=docker enabled=yes
+
+- name: ensure docker is started
+  service: name=docker state=started
+
+- name: provide right on docker.sock to docker group
+  command: chown root.docker /var/run/docker.sock
+
+- name: ensure python-pip is at the latest version
+  yum: name=python-pip state=latest
+
+- name: ensure docker-py is installed
+  command: pip install docker-py
+
+- name: install or reinstall docker-compose
+  shell: curl -L https://github.com/docker/compose/releases/download/1.1.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+
+- name: add exec right on docker-compose
+  command: chmod +x /usr/local/bin/docker-compose
+
+- name: install dockerConnect tool
+  copy: src=../files/dockerConnect dest=/usr/bin/dockerConnect owner=root group=docker mode=0755 
+
+- name: install dockerKlean tool
+  copy: src=../files/dockerKlean dest=/usr/bin/dockerKlean owner=root group=docker mode=0755
