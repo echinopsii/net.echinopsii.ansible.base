@@ -24,6 +24,13 @@
   command: /usr/bin/dockerKlean
   ignore_errors: yes
 
+- name: remove fedora.21.systemd.rabbitmq docker container
+  docker:
+   name: "{{rbmq_container_name}}"
+   image: echinopsii/fedora.21.systemd.rabbitmq
+   state: absent
+  when: not provisioning
+
 - name: build fedora.21.systemd docker image
   docker_image: path="/ECHINOPSII/ansible/docker.base/fedora.21.systemd" name="echinopsii/fedora.21.systemd" state=present
   when: provisioning
@@ -44,14 +51,10 @@
   command: /usr/bin/dockerKlean
   ignore_errors: yes
 
-- name: define rbmq container name
-  set_fact: 
-    rbmq_container_name: "{{ hostvars[inventory_hostname]['nodeName'] }}"
-
 - name: run fedora.21.systemd.rabbitmq docker container
   docker: 
-   name: "{{rbmq_container_name}}"
-   hostname: "{{rbmq_container_name + '.' + ansible_fqdn}}"
+   name: "{{hostvars[inventory_hostname]['nodeName']}}"
+   hostname: "{{hostvars[inventory_hostname]['nodeName'] + '.' + ansible_fqdn}}"
    privileged: yes
    volumes: /sys/fs/cgroup:/sys/fs/cgroup:ro
    ports:
@@ -64,13 +67,6 @@
    - "{{ansible_eth0.ipv4.address + ':44001:44001'}}"
    image: echinopsii/fedora.21.systemd.rabbitmq
   when: provisioning
-
-- name: remove fedora.21.systemd.rabbitmq docker container
-  docker:
-   name: "{{rbmq_container_name}}"
-   image: echinopsii/fedora.21.systemd.rabbitmq
-   state: absent
-  when: not provisioning
 
 - name: push add_guest_user.sh
   template: src=add_guest_user.sh dest=/tmp/add_guest_user.sh mode=0755
