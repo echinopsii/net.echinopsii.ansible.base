@@ -20,6 +20,10 @@
   command: chown -R ansible.ansible /ECHINOPSII/ansible
   when: provisioning
 
+- name: clean docker env
+  command: /usr/bin/dockerKlean
+  ignore_errors: yes
+
 - name: build fedora.21.systemd docker image
   docker_image: path="/ECHINOPSII/ansible/docker.base/fedora.21.systemd" name="echinopsii/fedora.21.systemd" state=present
   when: provisioning
@@ -67,3 +71,15 @@
    image: echinopsii/fedora.21.systemd.rabbitmq
    state: absent
   when: not provisioning
+
+- name: push add_guest_user.sh
+  template: src=add_guest_user.sh dest=/tmp/add_guest_user.sh mode=0755
+  when: provisioning
+
+- name: add guest user
+  shell: /tmp/add_guest_user.sh
+  when: provisioning
+
+- name: clean
+  shell: rm /tmp/add_guest_user.sh
+  when: provisioning
