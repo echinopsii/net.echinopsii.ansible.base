@@ -1,0 +1,10 @@
+---
+- hosts: frontoffice-nodes
+  remote_user: ansible
+  sudo: yes
+
+  vars:
+    provisioning: false
+
+  roles:
+    - tw.fo
