@@ -1,0 +1,10 @@
+---
+- hosts: middleoffice-nodes
+  remote_user: ansible
+  sudo: yes
+
+  vars:
+    provisioning: false
+
+  roles:
+    - tw.mo
