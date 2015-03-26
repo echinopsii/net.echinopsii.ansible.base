@@ -1,0 +1,79 @@
+---
+- name: ensure git is at the latest version
+  yum: name=git state=latest
+  when: provisioning
+
+- name: add sslVerify=false
+  command: git config --global http.sslverify "false"
+  when: provisioning
+
+- name: add /ECHINOPSII/ansible directory
+  command: mkdir -p /ECHINOPSII/ansible
+  ignore_errors: yes
+  when: provisioning
+
+- name: clone net.echinopsii.docker.base
+  git: repo=http://stash.echinopsii.net/scm/necii/docker.base.git dest=/ECHINOPSII/ansible/docker.base clone=yes update=yes
+  when: provisioning
+
+- name: chown /ECHINOPSII/ansible
+  command: chown -R ansible.ansible /ECHINOPSII/ansible
+  when: provisioning
+
+- name: clean docker env
+  command: /usr/bin/dockerKlean
+  ignore_errors: yes
+
+- name: remove fedora.21.systemd.tw.ri docker container
+  docker:
+   name: "{{hostvars[inventory_hostname]['nodeName']}}"
+   image: echinopsii/fedora.21.systemd.tw.ri
+   state: absent
+  when: not provisioning
+
+- name: build fedora.21.systemd docker image
+  docker_image: path="/ECHINOPSII/ansible/docker.base/fedora.21.systemd" name="echinopsii/fedora.21.systemd" state=present
+  when: provisioning
+
+- name: remove fedora.21.systemd docker image
+  docker_image: name="echinopsii/fedora.21.systemd" state=absent
+  when: not provisioning
+
+- name: build fedora.21.systemd.tradeworkflow docker image
+  docker_image: path="/ECHINOPSII/ansible/docker.base/fedora.21.systemd.tradeworkflow" name="echinopsii/fedora.21.systemd.tradeworkflow" state=build
+  when: provisioning
+
+- name: remove fedora.21.systemd.tradeworkflow docker image
+  docker_image: name="echinopsii/fedora.21.systemd.tradeworkflow" state=absent
+  when: not provisioning
+
+- name: build fedora.21.systemd.tw.ri docker image
+  docker_image: path="/ECHINOPSII/ansible/docker.base/fedora.21.systemd.tw.ri" name="echinopsii/fedora.21.systemd.tw.ri" state=build
+  when: provisioning
+
+- name: remove fedora.21.systemd.tw.ri docker image
+  docker_image: name="echinopsii/fedora.21.systemd.tw.ri" state=absent
+  when: not provisioning
+
+- name: clean docker env
+  command: /usr/bin/dockerKlean
+  ignore_errors: yes
+
+- name: push ri.env
+  template: src=ri.env dest=/ri.env mode="0755"
+  when: provisioning
+
+- name: remove ri.env
+  shell: rm /ri.env
+  when: not provisioning
+
+- name: run fedora.21.systemd.tw.ri docker container
+  docker: 
+   name: "{{hostvars[inventory_hostname]['nodeName']}}"
+   hostname: "{{hostvars[inventory_hostname]['nodeName'] + '.' + ansible_fqdn}}"
+   privileged: yes
+   volumes: 
+   - /sys/fs/cgroup:/sys/fs/cgroup:ro
+   - /ri.env:/ri.env
+   image: echinopsii/fedora.21.systemd.tw.ri
+  when: provisioning
