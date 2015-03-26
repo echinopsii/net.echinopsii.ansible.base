@@ -27,7 +27,7 @@
 - name: remove fedora.21.systemd.tw.bo docker container
   docker:
    name: "{{hostvars[inventory_hostname]['nodeName']}}"
-   image: echinopsii/fedora.21.systemd.rabbitmq
+   image: echinopsii/fedora.21.systemd.tw.bo
    state: absent
   when: not provisioning
 
