@@ -24,7 +24,7 @@
   command: /usr/bin/dockerKlean
   ignore_errors: yes
 
-- name: remove fedora.21.systemd.rabbitmq docker container
+- name: remove fedora.21.systemd.tw.bo docker container
   docker:
    name: "{{hostvars[inventory_hostname]['nodeName']}}"
    image: echinopsii/fedora.21.systemd.rabbitmq
@@ -39,43 +39,41 @@
   docker_image: name="echinopsii/fedora.21.systemd" state=absent
   when: not provisioning
 
-- name: build fedora.21.systemd.rabbitmq docker image
-  docker_image: path="/ECHINOPSII/ansible/docker.base/fedora.21.systemd.rabbitmq" name="echinopsii/fedora.21.systemd.rabbitmq" state=build
+- name: build fedora.21.systemd.tradeworkflow docker image
+  docker_image: path="/ECHINOPSII/ansible/docker.base/fedora.21.systemd.tradeworkflow" name="echinopsii/fedora.21.systemd.tradeworkflow" state=build
   when: provisioning
 
-- name: remove fedora.21.systemd.rabbitmq docker image
-  docker_image: name="echinopsii/fedora.21.systemd.rabbitmq" state=absent
+- name: remove fedora.21.systemd.tradeworkflow docker image
+  docker_image: name="echinopsii/fedora.21.systemd.tradeworkflow" state=absent
+  when: not provisioning
+
+- name: build fedora.21.systemd.tw.bo docker image
+  docker_image: path="/ECHINOPSII/ansible/docker.base/fedora.21.systemd.tw.bo" name="echinopsii/fedora.21.systemd.tw.bo" state=build
+  when: provisioning
+
+- name: remove fedora.21.systemd.tw.bo docker image
+  docker_image: name="echinopsii/fedora.21.systemd.tw.bo" state=absent
   when: not provisioning
 
 - name: clean docker env
   command: /usr/bin/dockerKlean
   ignore_errors: yes
 
-- name: run fedora.21.systemd.rabbitmq docker container
+- name: push bo.env
+  template: src=bo.env dest=/bo.env mode="0755"
+  when: provisioning
+
+- name: remove bo.env
+  shell: rm /bo.env
+  when: not provisioning
+
+- name: run fedora.21.systemd.tw.bo docker container
   docker: 
    name: "{{hostvars[inventory_hostname]['nodeName']}}"
    hostname: "{{hostvars[inventory_hostname]['nodeName'] + '.' + ansible_fqdn}}"
    privileged: yes
-   volumes: /sys/fs/cgroup:/sys/fs/cgroup:ro
-   ports:
-   - "127.0.0.1:5000:5000" 
-   - "{{ansible_eth0.ipv4.address + ':15672:15672'}}"
-   - "{{ansible_eth0.ipv4.address + ':5672:5672'}}"
-   - "{{ansible_eth0.ipv4.address + ':1833:1833'}}"
-   - "{{ansible_eth0.ipv4.address + ':61613:61613'}}"
-   - "{{ansible_eth0.ipv4.address + ':4369:4369'}}"
-   - "{{ansible_eth0.ipv4.address + ':44001:44001'}}"
-   image: echinopsii/fedora.21.systemd.rabbitmq
-  when: provisioning
-
-- name: push add_guest_user.sh
-  template: src=add_guest_user.sh dest=/tmp/add_guest_user.sh mode=0755
-  when: provisioning
-
-- name: add guest user
-  shell: /tmp/add_guest_user.sh
-  when: provisioning
-
-- name: clean
-  shell: rm /tmp/add_guest_user.sh
+   volumes: 
+   - /sys/fs/cgroup:/sys/fs/cgroup:ro
+   - /bo.env:/bo.env
+   image: echinopsii/fedora.21.systemd.tw.bo
   when: provisioning
