@@ -24,34 +24,22 @@
   command: /usr/bin/dockerKlean
   ignore_errors: yes
 
-- name: remove fedora.21.systemd.rabbitmq docker container
+- name: remove rabbitmq:3.3.5 docker container
   docker:
    name: "{{hostvars[inventory_hostname]['nodeName']}}"
-   image: echinopsii/fedora.21.systemd.rabbitmq
+   image: echinopsii/rabbitmq:3.3.5
    state: absent
   when: not provisioning
 
-- name: build fedora.21.systemd docker image
-  docker_image: path="/ECHINOPSII/ansible/docker.base/fedora.21.systemd" name="echinopsii/fedora.21.systemd" state=present
+- name: build rabbitmq:3.3.5 image
+  docker_image: path="/ECHINOPSII/ansible/docker.base/debian.rabbitmq/3.3.5" name="echinopsii/rabbitmq" tag="3.3.5" state=present
   when: provisioning
-
-- name: remove fedora.21.systemd docker image
-  docker_image: name="echinopsii/fedora.21.systemd" state=absent
-  when: not provisioning
-
-- name: build fedora.21.systemd.rabbitmq docker image
-  docker_image: path="/ECHINOPSII/ansible/docker.base/fedora.21.systemd.rabbitmq" name="echinopsii/fedora.21.systemd.rabbitmq" state=build
-  when: provisioning
-
-- name: remove fedora.21.systemd.rabbitmq docker image
-  docker_image: name="echinopsii/fedora.21.systemd.rabbitmq" state=absent
-  when: not provisioning
 
 - name: clean docker env
   command: /usr/bin/dockerKlean
   ignore_errors: yes
 
-- name: run fedora.21.systemd.rabbitmq docker container
+- name: run rabbitmq:3.3.5 docker container
   docker: 
    name: "{{hostvars[inventory_hostname]['nodeName']}}"
    hostname: "{{hostvars[inventory_hostname]['nodeName'] + '.' + ansible_fqdn}}"
@@ -65,7 +53,9 @@
    - "{{ansible_eth0.ipv4.address + ':61613:61613'}}"
    - "{{ansible_eth0.ipv4.address + ':4369:4369'}}"
    - "{{ansible_eth0.ipv4.address + ':44001:44001'}}"
-   image: echinopsii/fedora.21.systemd.rabbitmq
+   image: echinopsii/rabbitmq:3.3.5
+   env:
+       RABBITMQ_ADMIN_PASSWORD: admin
   when: provisioning
 
 - name: push add_guest_user.sh
