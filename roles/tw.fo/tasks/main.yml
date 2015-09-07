@@ -31,30 +31,6 @@
    state: absent
   when: not provisioning
 
-- name: build fedora.21.systemd docker image
-  docker_image: path="/ECHINOPSII/ansible/docker.base/fedora.21.systemd" name="echinopsii/fedora.21.systemd" state=present
-  when: provisioning
-
-- name: remove fedora.21.systemd docker image
-  docker_image: name="echinopsii/fedora.21.systemd" state=absent
-  when: not provisioning
-
-- name: build fedora.21.systemd.tradeworkflow docker image
-  docker_image: path="/ECHINOPSII/ansible/docker.base/fedora.21.systemd.tradeworkflow" name="echinopsii/fedora.21.systemd.tradeworkflow" state=build
-  when: provisioning
-
-- name: remove fedora.21.systemd.tradeworkflow docker image
-  docker_image: name="echinopsii/fedora.21.systemd.tradeworkflow" state=absent
-  when: not provisioning
-
-- name: build fedora.21.systemd.tw.fo docker image
-  docker_image: path="/ECHINOPSII/ansible/docker.base/fedora.21.systemd.tw.fo" name="echinopsii/fedora.21.systemd.tw.fo" state=build
-  when: provisioning
-
-- name: remove fedora.21.systemd.tw.fo docker image
-  docker_image: name="echinopsii/fedora.21.systemd.tw.fo" state=absent
-  when: not provisioning
-
 - name: clean docker env
   command: /usr/bin/dockerKlean
   ignore_errors: yes
