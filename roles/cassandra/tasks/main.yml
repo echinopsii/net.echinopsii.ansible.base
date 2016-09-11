@@ -1,0 +1,59 @@
+---
+- name: ensure git is at the latest version
+  yum: name=git state=latest
+  when: provisioning
+
+- name: add sslVerify=false
+  command: git config --global http.sslverify "false"
+  when: provisioning
+
+- name: add /ECHINOPSII/ansible directory
+  command: mkdir -p /ECHINOPSII/ansible
+  ignore_errors: yes
+  when: provisioning
+
+- name: clone net.echinopsii.docker.base
+  git: repo=http://stash.echinopsii.net/scm/necii/docker.base.git dest=/ECHINOPSII/ansible/docker.base clone=yes update=yes
+  when: provisioning
+
+- name: chown /ECHINOPSII/ansible
+  command: chown -R ansible.ansible /ECHINOPSII/ansible
+  when: provisioning
+
+- name: clean docker env
+  command: /usr/bin/dockerKlean
+  ignore_errors: yes
+
+- name: remove cassandra:cluster.3.7 docker container
+  docker:
+   name: "{{hostvars[inventory_hostname]['nodeName']}}"
+   image: echinopsii/cassandra:cluster.3.7
+   state: absent
+  when: not provisioning
+
+- name: build cassandra:cluster.3.7 image
+  docker_image: path="/ECHINOPSII/ansible/docker.base/cassandra/images-cass/cassandra-cluster-37/" name="echinopsii/cassandra" tag="cluster.3.7" state=present
+  when: provisioning
+
+- name: clean docker env
+  command: /usr/bin/dockerKlean
+  ignore_errors: yes
+
+- name: run cassandra:cluster.3.7 docker container
+  docker: 
+   name: "{{hostvars[inventory_hostname]['nodeName']}}"
+   hostname: "{{hostvars[inventory_hostname]['nodeName'] + '.' + ansible_fqdn}}"
+   ports:
+   - "{{ansible_eth0.ipv4.address + ':7000:7000'}}"
+   - "{{ansible_eth0.ipv4.address + ':7001:7001'}}"
+   - "{{ansible_eth0.ipv4.address + ':7199:7199'}}"
+   - "{{ansible_eth0.ipv4.address + ':9042:9042'}}"
+   - "{{ansible_eth0.ipv4.address + ':9160:9160'}}"
+   image: echinopsii/cassandra:cluster.3.7
+   env:
+       CASSANDRA_BROADCAST_ADDRESS: "{{ansible_eth0.ipv4.address}}"
+       CASSANDRA_TOKEN: "{{hostvars[inventory_hostname]['token']}}"
+       CASSANDRA_CLUSTERNAME: "{{hostvars[inventory_hostname]['cluster_name']}}"
+       CASSANDRA_SEEDS: "cass-pool01.lab01.dev,cass-pool07.lab07.dev"
+       WAIT_BEFORE_START: "{{hostvars[inventory_hostname]['wait_before_start']}}"
+  when: provisioning

@@ -1,0 +1,10 @@
+---
+- hosts: cassandra-nodes
+  remote_user: ansible
+  sudo: yes
+
+  vars:
+    provisioning: true
+
+  roles:
+    - cassandra
