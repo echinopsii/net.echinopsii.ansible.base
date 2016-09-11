@@ -1,0 +1,96 @@
+---
+- name: ensure docker is stopped
+  service: name=docker state=stopped
+
+- name: is docker partition done ?
+  shell: df -h | grep /var/lib/docker 
+  ignore_errors: yes
+  register: isDockerPartitionDone
+
+- name: is docker partition attached ?
+  shell: ls /dev/vdb
+  ignore_errors: yes
+  register: isDockerPartitionAttached 
+
+- debug: msg="ready to setup docker partition"
+  when: isDockerPartitionAttached.rc == 0 and isDockerPartitionDone.rc != 0
+
+- name: is docker physical volume created ?
+  shell: pvs /dev/vdb
+  ignore_errors: yes
+  register: isDockerPVCreated
+
+- debug: msg="ready to create docker PV"
+  when: isDockerPVCreated.rc != 0 and isDockerPartitionAttached.rc == 0 and isDockerPartitionDone.rc != 0
+
+- name: docker pvcreate 
+  shell: pvcreate /dev/vdb
+  when: isDockerPVCreated.rc != 0 and isDockerPartitionAttached.rc == 0 and isDockerPartitionDone.rc != 0
+
+- name: is docker volume group created ? 
+  shell: vgs docker
+  ignore_errors: yes
+  register: isDockerVGCreated
+
+- debug: msg="ready to create docker VG"
+  when: isDockerVGCreated.rc != 0 and isDockerPartitionAttached.rc == 0 and isDockerPartitionDone.rc != 0
+
+- name: docker vgcreate     
+  shell: vgcreate docker /dev/vdb
+  when: isDockerVGCreated.rc != 0 and isDockerPartitionAttached.rc == 0 and isDockerPartitionDone.rc != 0
+
+- name: is docker logical volume created ?
+  shell: lvs docker | grep docker-01
+  ignore_errors: yes
+  register: isDockerLVCreated
+
+- debug: msg="ready to create docker LV"
+  when: isDockerLVCreated.rc != 0 and isDockerPartitionAttached.rc == 0 and isDockerPartitionDone.rc != 0
+
+- name: docker lvcreate
+  shell: lvcreate -L 7.0GB -n docker-01 docker
+  when: isDockerLVCreated.rc != 0 and isDockerPartitionAttached.rc == 0 and isDockerPartitionDone.rc != 0
+
+- name: tmp mount dir
+  shell: mkdir /tmp/lvm
+  ignore_errors: yes
+  register: tmpLvmExists
+  when: isDockerPartitionDone.rc != 0
+
+- name: mount lvm
+  shell: mount /dev/mapper/docker-docker--01 /tmp/lvm
+  ignore_errors: yes
+  register: mountLVM
+  when: isDockerPartitionDone.rc != 0
+
+- debug: msg="mkfs.ext4"
+  ignore_errors: yes
+  when: isDockerPartitionDone.rc != 0 and mountLVM.rc != 0 
+
+- name: mkfs.ext4
+  shell: mkfs.ext4 /dev/mapper/docker-docker--01
+  when: isDockerPartitionDone.rc != 0 and mountLVM.rc != 0
+
+- name: mount again
+  shell: mount /dev/mapper/docker-docker--01 /tmp/lvm
+  when: isDockerPartitionDone.rc != 0 and mountLVM.rc != 0
+
+- name: mv docker data to new partition
+  shell: mv /var/lib/docker/* /tmp/lvm
+  when: isDockerPartitionDone.rc != 0
+
+- name: umount and clean tmp
+  shell: umount /tmp/lvm ; rm -rf /tmp/lvm
+  ignore_errors: yes
+  when: isDockerPartitionDone.rc != 0
+
+- name: mount to /var/lib/docker
+  shell: mount /dev/mapper/docker-docker--01 /var/lib/docker
+  when: isDockerPartitionDone.rc != 0
+
+- name: config fstab
+  shell: echo "/dev/mapper/docker-docker--01 /var/lib/docker   ext4    defaults    1 1" >> /etc/fstab
+  when: isDockerPartitionDone.rc != 0
+
+- name: ensure docker is started
+  service: name=docker state=started 

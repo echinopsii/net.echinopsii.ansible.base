@@ -1,0 +1,7 @@
+---
+- hosts: docker-servers
+  remote_user: ansible
+  sudo: yes
+
+  roles:
+    - docker-part
