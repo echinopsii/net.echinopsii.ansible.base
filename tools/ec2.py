@@ -425,10 +425,8 @@ class Ec2Inventory(object):
         for option in group_by_options:
             if config.has_option('ec2', option):
                 value = config.getboolean('ec2', option)
-                print("Config: { " + str(option)  + "," + str(value) + " }")
                 setattr(self, option, value)
             else:
-                print(str(option) + " not in config : set to True" )
                 setattr(self, option, True)
 
         # Do we need to just include hosts that match a pattern?
@@ -889,12 +887,26 @@ class Ec2Inventory(object):
         # Inventory : Group by ansible groups tag key
         if self.group_by_ansible_groups_tag_keys:
             ansible_groups = []
+            ansible_groups_config = {}
             for k, v in instance.tags.items():
                 if k == "ansible_groups":
                     ansible_groups = v.split(",")
-            for group in ansible_groups:
-                self.push(self.inventory, group, hostname)
 
+                if "ansible_group_" in k:
+                    group_id = str(k.split("ansible_group_")[1].split("_")[0])
+                    config_key = str(k.split("ansible_group_")[1].split("_")[1])
+                    if group_id not in ansible_groups_config.keys():
+                        ansible_groups_config[group_id] = []
+                    ansible_groups_config[group_id].append((config_key, str(v)))
+
+            for group in ansible_groups:
+                if group in ansible_groups_config.keys():
+                    hostname_conf = hostname
+                    for ck, cv in ansible_groups_config[group]:
+                        hostname_conf += " " + ck + "=" + cv
+                else:
+                    hostname_conf = hostname
+                self.push(self.inventory, group, hostname_conf)
 
         # Inventory: Group by Route53 domain names if enabled
         if self.route53_enabled and self.group_by_route53_names:
