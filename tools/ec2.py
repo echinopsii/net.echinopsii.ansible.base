@@ -892,12 +892,8 @@ class Ec2Inventory(object):
             for k, v in instance.tags.items():
                 if k == "ansible_groups":
                     ansible_groups = v.split(",")
-                    print(str(ansible_groups))
             for group in ansible_groups:
                 self.push(self.inventory, group, hostname)
-            # if "ansible_target" in instance.tags.items().keys():
-            #     is_ansible_target = instance.tags.items().get("ansible_target")
-            #     print("hostname: " + hostname + ", is_ansible_target: " + is_ansible_target)
 
 
         # Inventory: Group by Route53 domain names if enabled
