@@ -53,7 +53,7 @@
    env:
        CASSANDRA_BROADCAST_ADDRESS: "{{ansible_eth0.ipv4.address}}"
        CASSANDRA_TOKEN: "{{hostvars[inventory_hostname]['token']}}"
-       CASSANDRA_CLUSTERNAME: "{{hostvars[inventory_hostname]['cluster_name']}}"
-       CASSANDRA_SEEDS: "cass-pool01.lab01.dev,cass-pool07.lab07.dev"
+       CASSANDRA_CLUSTERNAME: "{{hostvars[inventory_hostname]['clusterName']}}"
+       CASSANDRA_SEEDS: "{{hostvars[inventory_hostname]['seeds']}}"
        WAIT_BEFORE_START: "{{hostvars[inventory_hostname]['wait_before_start']}}"
   when: provisioning
