@@ -1,9 +1,11 @@
 ---
 - name: upgrade all packages
   yum: name=* state=latest
+  when: (docker_provisioning and ansible_pkg_mgr == 'yum')
 
 - name: ensure docker is at the latest version
   yum: name=docker-io state=latest
+  when: (docker_provisioning and ansible_pkg_mgr == 'yum')
 
 - name: ensure docker is enabled
   service: name=docker enabled=yes
@@ -13,21 +15,28 @@
 
 - name: provide right on docker.sock to docker group
   command: chown root.docker /var/run/docker.sock
+  when: docker_provisioning
 
 - name: ensure python-pip is at the latest version
   yum: name=python-pip state=latest
+  when: (docker_provisioning and ansible_pkg_mgr == 'yum')
 
 - name: ensure docker-py is installed
   command: pip install docker-py
+  when: docker_provisioning
 
 - name: install or reinstall docker-compose
   shell: curl -L https://github.com/docker/compose/releases/download/1.1.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+  when: docker_provisioning
 
 - name: add exec right on docker-compose
   command: chmod +x /usr/local/bin/docker-compose
+  when: docker_provisioning
 
 - name: install dockerConnect tool
   copy: src=../files/dockerConnect dest=/usr/bin/dockerConnect owner=root group=docker mode=0755 
+  when: docker_provisioning
 
 - name: install dockerKlean tool
   copy: src=../files/dockerKlean dest=/usr/bin/dockerKlean owner=root group=docker mode=0755
+  when: docker_provisioning

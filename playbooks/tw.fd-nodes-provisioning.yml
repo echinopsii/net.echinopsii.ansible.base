@@ -4,6 +4,7 @@
   sudo: yes
 
   vars:
+    docker_provisioning: false
     provisioning: true
 
   roles:
