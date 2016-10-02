@@ -1,11 +1,19 @@
 ---
-- name: upgrade all packages
+- name: upgrade all packages (yum)
   yum: name=* state=latest
   when: (docker_provisioning and ansible_pkg_mgr == 'yum')
 
-- name: ensure docker is at the latest version
+- name: upgrade all packages (apt)
+  apt: upgrade=yes
+  when: (docker_provisioning and ansible_pkg_mgr == 'apt')  
+
+- name: ensure docker is at the latest version (yum)
   yum: name=docker-io state=latest
   when: (docker_provisioning and ansible_pkg_mgr == 'yum')
+
+- name: ensure docker is at the latest version (apt)
+  apt: name=docker.io state=latest
+  when: (docker_provisioning and ansible_pkg_mgr == 'apt')
 
 - name: ensure docker is enabled
   service: name=docker enabled=yes
@@ -17,9 +25,13 @@
   command: chown root.docker /var/run/docker.sock
   when: docker_provisioning
 
-- name: ensure python-pip is at the latest version
+- name: ensure python-pip is at the latest version (yum)
   yum: name=python-pip state=latest
   when: (docker_provisioning and ansible_pkg_mgr == 'yum')
+
+- name: ensure python-pip is at the latest version (apt)
+  apt: name=python-pip state=latest
+  when: (docker_provisioning and ansible_pkg_mgr == 'apt')
 
 - name: ensure docker-py is installed
   command: pip install docker-py

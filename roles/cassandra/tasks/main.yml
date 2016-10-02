@@ -1,7 +1,11 @@
 ---
-- name: ensure git is at the latest version
+- name: ensure git is at the latest version (yum)
   yum: name=git state=latest
-  when: provisioning
+  when: (provisioning and ansible_pkg_mgr == 'yum')
+
+- name: ensure git is at the latest version (apt)
+  apt: name=git state=latest
+  when: (provisioning and ansible_pkg_mgr == 'apt') 
 
 - name: add sslVerify=false
   command: git config --global http.sslverify "false"
@@ -20,10 +24,6 @@
   command: chown -R ansible.ansible /ECHINOPSII/ansible
   when: provisioning
 
-- name: clean docker env
-  command: /usr/bin/dockerKlean
-  ignore_errors: yes
-
 - name: remove cassandra:cluster.3.7 docker container
   docker:
    name: "{{hostvars[inventory_hostname]['nodeName']}}"
@@ -34,10 +34,6 @@
 - name: build cassandra:cluster.3.7 image
   docker_image: path="/ECHINOPSII/ansible/docker.base/cassandra/images-cass/cassandra-cluster-37/" name="echinopsii/cassandra" tag="cluster.3.7" state=present
   when: provisioning
-
-- name: clean docker env
-  command: /usr/bin/dockerKlean
-  ignore_errors: yes
 
 - name: run cassandra:cluster.3.7 docker container
   docker: 
@@ -57,3 +53,8 @@
        CASSANDRA_SEEDS: "{{hostvars[inventory_hostname]['seeds']}}"
        WAIT_BEFORE_START: "{{hostvars[inventory_hostname]['wait_before_start']}}"
   when: provisioning
+
+- name: clean docker env
+  command: /usr/bin/dockerKlean
+  ignore_errors: yes
+

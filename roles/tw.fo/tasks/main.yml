@@ -1,7 +1,11 @@
 ---
-- name: ensure git is at the latest version
+- name: ensure git is at the latest version (yum)
   yum: name=git state=latest
-  when: provisioning
+  when: (provisioning and ansible_pkg_mgr == 'yum')
+
+- name: ensure git is at the latest version (apt)
+  apt: name=git state=latest
+  when: (provisioning and ansible_pkg_mgr == 'apt')  
 
 - name: add sslVerify=false
   command: git config --global http.sslverify "false"
@@ -20,20 +24,12 @@
   command: chown -R ansible.ansible /ECHINOPSII/ansible
   when: provisioning
 
-- name: clean docker env
-  command: /usr/bin/dockerKlean
-  ignore_errors: yes
-
 - name: remove fedora.21.systemd.tw.fo docker container
   docker:
    name: "{{hostvars[inventory_hostname]['nodeName']}}"
    image: echinopsii/fedora.21.systemd.tw.fo
    state: absent
   when: not provisioning
-
-- name: clean docker env
-  command: /usr/bin/dockerKlean
-  ignore_errors: yes
 
 - name: push fo.env
   template: src=fo.env dest=/fo.env mode="0755"
@@ -53,3 +49,8 @@
    - /fo.env:/fo.env
    image: echinopsii/fedora.21.systemd.tw.fo
   when: provisioning
+
+- name: clean docker env
+  command: /usr/bin/dockerKlean
+  ignore_errors: yes
+
