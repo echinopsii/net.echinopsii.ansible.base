@@ -26,7 +26,7 @@
 
 - name: remove cassandra:cluster.3.7 docker container
   docker:
-   name: "{{hostvars[inventory_hostname]['nodeName']}}"
+   name: "{{hostvars[inventory_hostname]['cassNodeName']}}"
    image: echinopsii/cassandra:cluster.3.7
    state: absent
   when: not provisioning
@@ -37,8 +37,8 @@
 
 - name: run cassandra:cluster.3.7 docker container
   docker: 
-   name: "{{hostvars[inventory_hostname]['nodeName']}}"
-   hostname: "{{hostvars[inventory_hostname]['nodeName'] + '.' + ansible_fqdn}}"
+   name: "{{hostvars[inventory_hostname]['cassNodeName']}}"
+   hostname: "{{hostvars[inventory_hostname]['cassNodeName'] + '.' + ansible_fqdn}}"
    ports:
    - "{{ansible_eth0.ipv4.address + ':7000:7000'}}"
    - "{{ansible_eth0.ipv4.address + ':7001:7001'}}"
@@ -48,10 +48,10 @@
    image: echinopsii/cassandra:cluster.3.7
    env:
        CASSANDRA_BROADCAST_ADDRESS: "{{ansible_eth0.ipv4.address}}"
-       CASSANDRA_TOKEN: "{{hostvars[inventory_hostname]['token']}}"
-       CASSANDRA_CLUSTERNAME: "{{hostvars[inventory_hostname]['clusterName']}}"
-       CASSANDRA_SEEDS: "{{hostvars[inventory_hostname]['seeds']}}"
-       WAIT_BEFORE_START: "{{hostvars[inventory_hostname]['wait_before_start']}}"
+       CASSANDRA_TOKEN: "{{hostvars[inventory_hostname]['cassToken']}}"
+       CASSANDRA_CLUSTERNAME: "{{hostvars[inventory_hostname]['cassClusterName']}}"
+       CASSANDRA_SEEDS: "{{hostvars[inventory_hostname]['cassSeeds']}}"
+       WAIT_BEFORE_START: "{{hostvars[inventory_hostname]['cassWaitBeforeStart']}}"
   when: provisioning
 
 - name: clean docker env
