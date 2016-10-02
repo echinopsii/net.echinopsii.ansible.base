@@ -26,7 +26,7 @@
 
 - name: remove fedora.21.systemd.tw.ri docker container
   docker:
-   name: "{{hostvars[inventory_hostname]['nodeName']}}"
+   name: "{{hostvars[inventory_hostname]['riNodeName']}}"
    image: echinopsii/fedora.21.systemd.tw.ri
    state: absent
   when: not provisioning
@@ -41,8 +41,8 @@
 
 - name: run fedora.21.systemd.tw.ri docker container
   docker: 
-   name: "{{hostvars[inventory_hostname]['nodeName']}}"
-   hostname: "{{hostvars[inventory_hostname]['nodeName'] + '.' + ansible_fqdn}}"
+   name: "{{hostvars[inventory_hostname]['riNodeName']}}"
+   hostname: "{{hostvars[inventory_hostname]['riNodeName'] + '.' + ansible_fqdn}}"
    privileged: yes
    volumes: 
    - /sys/fs/cgroup:/sys/fs/cgroup:ro

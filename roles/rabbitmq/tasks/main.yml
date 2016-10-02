@@ -26,7 +26,7 @@
 
 - name: remove rabbitmq:3.3.5 docker container
   docker:
-   name: "{{hostvars[inventory_hostname]['nodeName']}}"
+   name: "{{hostvars[inventory_hostname]['rbmqNodeName']}}"
    image: echinopsii/rabbitmq:3.3.5
    state: absent
   when: not provisioning
@@ -37,8 +37,8 @@
 
 - name: run rabbitmq:3.3.5 docker container
   docker: 
-   name: "{{hostvars[inventory_hostname]['nodeName']}}"
-   hostname: "{{hostvars[inventory_hostname]['nodeName'] + '.' + ansible_fqdn}}"
+   name: "{{hostvars[inventory_hostname]['rbmqNodeName']}}"
+   hostname: "{{hostvars[inventory_hostname]['rbmqNodeName'] + '.' + ansible_fqdn}}"
    privileged: yes
    volumes: /sys/fs/cgroup:/sys/fs/cgroup:ro
    ports:
