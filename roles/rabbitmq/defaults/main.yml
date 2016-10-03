@@ -1,2 +1,4 @@
 ---
+docker_provisioning: false
+docker_overlay: false
 provisioning: true

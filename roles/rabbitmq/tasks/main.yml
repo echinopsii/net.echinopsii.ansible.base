@@ -52,7 +52,29 @@
    image: echinopsii/rabbitmq:3.3.5
    env:
        RABBITMQ_ADMIN_PASSWORD: admin
-  when: provisioning
+  when: (provisioning and not docker_overlay)
+
+- name: create docker local network
+  command: docker network create --bridge --subnet="{{hostvars[inventory_hostname]['rbmqLocalSubnetIP']}}" {{hostvars[inventory_hostname]['rbmqLocalSubnetIP']}}
+  ignore_errors: yes
+  when: (provisioning and docker_overlay)
+
+- name: create docker rabbitmq overlay network
+  command: docker network create --driver overlay --subnet="{{hostvars[inventory_hostname]['rbmqOverlaySubnet']}}" {{hostvars[inventory_hostname]}}
+  ignore_errors: yes
+  when: (provisioning and docker_overlay)
+
+- name: create docker rabbitmq container on overlay network
+  command: echo toto
+  when: (provisioning and docker_overlay)
+
+- name: connect docker rabbitmq container to local network
+  command: echo toto
+  when: (provisioning and docker_overlay)
+
+- name: start docker rabbitmq container
+  command: echo toto
+  when: (provisioning and docker_overlay)
 
 - name: push add_guest_user.sh
   template: src=add_guest_user.sh dest=/tmp/add_guest_user.sh mode=0755
