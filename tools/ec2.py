@@ -901,12 +901,22 @@ class Ec2Inventory(object):
                     ansible_groups_vars[group_id][config_key] = str(v)
 
             for group in ansible_groups:
-                if group in ansible_groups_vars.keys():
-                    my_group_with_vars = {
-                        "hosts": [],
-                        "vars": ansible_groups_vars[group]
-                    }
-                    self.inventory[group] = my_group_with_vars
+                if group not in self.inventory.keys():
+                    if group in ansible_groups_vars.keys():
+                        my_group_with_vars = {
+                            "hosts": [],
+                            "vars": ansible_groups_vars[group]
+                        }
+                        self.inventory[group] = my_group_with_vars
+                    else: 
+                        my_group_with_no_vars = {
+                            "hosts": [],
+                            "vars": {}
+                        }
+                        self.inventory[group] = my_group_with_no_vars
+                elif group in ansible_groups_vars.keys():
+                    self.inventory[group]['vars'] = ansible_groups_vars[group]
+
                 self.push_host(self.inventory, group, hostname)
 
         # Inventory: Group by Route53 domain names if enabled
