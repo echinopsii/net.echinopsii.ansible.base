@@ -1,28 +1,28 @@
 ---
 - name: ensure git is at the latest version (yum)
   yum: name=git state=latest
-  when: (provisioning and ansible_pkg_mgr == 'yum')
+  when: (provisioning and ansible_pkg_mgr == 'yum' and docker_build)
 
 - name: ensure git is at the latest version (apt)
   apt: name=git state=latest
-  when: (provisioning and ansible_pkg_mgr == 'apt') 
+  when: (provisioning and ansible_pkg_mgr == 'apt' and docker_build) 
 
 - name: add sslVerify=false
   command: git config --global http.sslverify "false"
-  when: provisioning
+  when: (provisioning and docker_build)
 
 - name: add /ECHINOPSII/ansible directory
   command: mkdir -p /ECHINOPSII/ansible
   ignore_errors: yes
-  when: provisioning
+  when: (provisioning and docker_build)
 
 - name: clone net.echinopsii.docker.base
   git: repo=http://stash.echinopsii.net/scm/necii/docker.base.git dest=/ECHINOPSII/ansible/docker.base clone=yes update=yes
-  when: provisioning
+  when: (provisioning and docker_build)
 
 - name: chown /ECHINOPSII/ansible
   command: chown -R ansible.ansible /ECHINOPSII/ansible
-  when: provisioning
+  when: (provisioning and docker_build)
 
 - name: remove cassandra:cluster.3.7 docker container
   docker:
@@ -33,7 +33,7 @@
 
 - name: build cassandra:cluster.3.7 image
   docker_image: path="/ECHINOPSII/ansible/docker.base/cassandra/images-cass/cassandra-cluster-37/" name="echinopsii/cassandra" tag="cluster.3.7" state=present
-  when: provisioning
+  when: (provisioning and docker_build)
 
 - name: run cassandra:cluster.3.7 docker container - no docker overlay
   docker: 
@@ -55,28 +55,27 @@
   when: (provisioning and not docker_overlay)
 
 - name: create docker local network
-  command: docker network create --bridge --subnet="{{hostvars[inventory_hostname]['cassLocalSubnetIP']}}" {{hostvars[inventory_hostname]['cassLocalSubnetName']}} 
+  command: docker network create --driver bridge --subnet="{{hostvars[inventory_hostname]['cassLocalSubnetIP']}}" {{hostvars[inventory_hostname]['cassLocalSubnetName']}} 
   ignore_errors: yes
   when: (provisioning and docker_overlay)
 
 - name: create docker cassandra overlay network
   command: docker network create --driver overlay --subnet="{{hostvars[inventory_hostname]['cassOverlaySubnetIP']}}" {{hostvars[inventory_hostname]['cassOverlaySubnetName']}}
   ignore_errors: yes
-  when: (provisioning and docker_overlay)
+  when: (provisioning and docker_overlay and hostvars[inventory_hostname]['cassCluPrimaryNode'] == hostvars[inventory_hostname]['cassNodeName'])
 
 - name: create docker cassandra container on overlay network
-  command: echo toto
+  command: docker create --env CASSANDRA_BROADCAST_INTERFACE=eth0 --env CASSANDRA_LISTEN_ON_BROADCAST=true --env CASSANDRA_TOKEN="{{hostvars[inventory_hostname]['cassToken']}}" --env CASSANDRA_CLUSTERNAME={{hostvars[inventory_hostname]['cassClusterName']}} --env CASSANDRA_SEEDS={{hostvars[inventory_hostname]['cassSeeds']}} --env WAIT_BEFORE_START={{hostvars[inventory_hostname]['cassWaitBeforeStart']}} --network={{hostvars[inventory_hostname]['cassOverlaySubnetName']}} --hostname {{hostvars[inventory_hostname]['cassNodeName']}} --name {{hostvars[inventory_hostname]['cassNodeName']}} echinopsii/cassandra:cluster.3.7
   when: (provisioning and docker_overlay)
 
 - name: connect cassandra container to local network
-  command: echo toto
+  command: docker network connect {{hostvars[inventory_hostname]['cassLocalSubnetName']}} {{hostvars[inventory_hostname]['cassNodeName']}}
   when: (provisioning and docker_overlay)
 
 - name: start docker cassandra container
-  command: echo toto
+  command: docker start {{hostvars[inventory_hostname]['cassNodeName']}}
   when: (provisioning and docker_overlay)
   
 - name: clean docker env
   command: /usr/bin/dockerKlean
   ignore_errors: yes
-
