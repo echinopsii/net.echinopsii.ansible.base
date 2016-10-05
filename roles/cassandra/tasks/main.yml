@@ -60,7 +60,7 @@
   when: (provisioning and docker_overlay)
 
 - name: create docker cassandra overlay network
-  command: docker network create --driver overlay --subnet="{{hostvars[inventory_hostname]['cassOverlaySubnet']}}" cass_overlay
+  command: docker network create --driver overlay --subnet="{{hostvars[inventory_hostname]['cassOverlaySubnetIP']}}" {{hostvars[inventory_hostname]['cassOverlaySubnetName']}}
   ignore_errors: yes
   when: (provisioning and docker_overlay)
 
