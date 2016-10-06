@@ -1,0 +1,7 @@
+---
+- hosts: rabbitmq-cluster
+  remote_user: ansible
+  sudo: yes
+
+  roles:
+    - rabbitmq-clu

@@ -1,15 +1,19 @@
 ---
 - name: copy setupHost.sh
   copy: src=../files/setupHost.sh dest=/tmp/ owner=root group=docker mode=0700
+  when: not docker_overlay
 
 - name: define rabbitmq_clu_nodes.json
   shell: echo "{{hostvars[inventory_hostname]['rabbitmqCluNodes']}}" > /tmp/rabbitmq_clu_nodes.json
+  when: not docker_overlay
 
 - name: reformat rabbitmq_clu_nodes.json
   shell: sed -i "s#'#\"#g" /tmp/rabbitmq_clu_nodes.json
+  when: not docker_overlay
 
 - name: set cluster hostname in container
   shell: /tmp/setupHost.sh
+  when: not docker_overlay
 
 - name: copy connect.sh
   copy: src=../files/connect.sh dest=/tmp/ owner=root group=docker mode=0700
@@ -27,5 +31,5 @@
   shell: /tmp/connect.sh
   when: not hostvars[inventory_hostname]['rabbitmqCluPrimaryNode'] == hostvars[inventory_hostname]['rbmqNodeName']
 
-- name: clean
-  shell: rm /tmp/*.sh /tmp/*.json
+#- name: clean
+#  shell: rm /tmp/*.sh /tmp/*.json
