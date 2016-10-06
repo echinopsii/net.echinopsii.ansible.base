@@ -1,28 +1,28 @@
 ---
 - name: ensure git is at the latest version (yum)
   yum: name=git state=latest
-  when: (provisioning and ansible_pkg_mgr == 'yum')
+  when: (provisioning and ansible_pkg_mgr == 'yum' and docker_build)
 
 - name: ensure git is at the latest version (apt)
   apt: name=git state=latest
-  when: (provisioning and ansible_pkg_mgr == 'apt')  
+  when: (provisioning and ansible_pkg_mgr == 'apt' and docker_build)  
 
 - name: add sslVerify=false
   command: git config --global http.sslverify "false"
-  when: provisioning
+  when: (provisioning and docker_build)
 
 - name: add /ECHINOPSII/ansible directory
   command: mkdir -p /ECHINOPSII/ansible
   ignore_errors: yes
-  when: provisioning
+  when: (provisioning and docker_build)
 
 - name: clone net.echinopsii.docker.base
   git: repo=http://stash.echinopsii.net/scm/necii/docker.base.git dest=/ECHINOPSII/ansible/docker.base clone=yes update=yes
-  when: provisioning
+  when: (provisioning and docker_build)
 
 - name: chown /ECHINOPSII/ansible
   command: chown -R ansible.ansible /ECHINOPSII/ansible
-  when: provisioning
+  when: (provisioning and docker_build)
 
 - name: remove rabbitmq:3.3.5 docker container
   docker:
@@ -33,14 +33,12 @@
 
 - name: build rabbitmq:3.3.5 image
   docker_image: path="/ECHINOPSII/ansible/docker.base/debian.rabbitmq/3.3.5" name="echinopsii/rabbitmq" tag="3.3.5" state=present
-  when: provisioning
+  when: (provisioning and docker_build)
 
 - name: run rabbitmq:3.3.5 docker container
   docker: 
    name: "{{hostvars[inventory_hostname]['rbmqNodeName']}}"
    hostname: "{{hostvars[inventory_hostname]['rbmqNodeName'] + '.' + ansible_fqdn}}"
-   privileged: yes
-   volumes: /sys/fs/cgroup:/sys/fs/cgroup:ro
    ports:
    - "127.0.0.1:5000:5000" 
    - "{{ansible_eth0.ipv4.address + ':15672:15672'}}"
@@ -55,26 +53,34 @@
   when: (provisioning and not docker_overlay)
 
 - name: create docker local network
-  command: docker network create --bridge --subnet="{{hostvars[inventory_hostname]['rbmqLocalSubnetIP']}}" {{hostvars[inventory_hostname]['rbmqLocalSubnetIP']}}
+  command: docker network create --driver bridge --subnet="{{hostvars[inventory_hostname]['rbmqLocalSubnetIP']}}" {{hostvars[inventory_hostname]['rbmqLocalSubnetName']}}
   ignore_errors: yes
   when: (provisioning and docker_overlay)
 
 - name: create docker rabbitmq overlay network
-  command: docker network create --driver overlay --subnet="{{hostvars[inventory_hostname]['rbmqOverlaySubnet']}}" {{hostvars[inventory_hostname]}}
+  command: docker network create --driver overlay --subnet="{{hostvars[inventory_hostname]['rbmqOverlaySubnetIP']}}" {{hostvars[inventory_hostname]['rbmqOverlaySubnetName']}}
   ignore_errors: yes
-  when: (provisioning and docker_overlay)
+  when: (provisioning and docker_overlay and hostvars[inventory_hostname]['rabbitmqCluPrimaryNode'] == hostvars[inventory_hostname]['rbmqNodeName'])
 
 - name: create docker rabbitmq container on overlay network
-  command: echo toto
+  command: docker create -p 127.0.0.1:5000:5000 -p {{ansible_eth0.ipv4.address + ':15672:15672'}} --env RABBITMQ_ADMIN_PASSWORD=admin --network={{hostvars[inventory_hostname]['rbmqOverlaySubnetName']}} --hostname {{hostvars[inventory_hostname]['rbmqNodeName']}} --name {{hostvars[inventory_hostname]['rbmqNodeName']}} echinopsii/rabbitmq:3.3.5
   when: (provisioning and docker_overlay)
 
 - name: connect docker rabbitmq container to local network
-  command: echo toto
+  command: docker network connect {{hostvars[inventory_hostname]['rbmqLocalSubnetName']}} {{hostvars[inventory_hostname]['rbmqNodeName']}}
   when: (provisioning and docker_overlay)
 
 - name: start docker rabbitmq container
-  command: echo toto
+  command: docker start {{hostvars[inventory_hostname]['rbmqNodeName']}}
   when: (provisioning and docker_overlay)
+
+- name: ensure curl is at the latest version (yum)
+  yum: name=curl state=latest
+  when: (provisioning and ansible_pkg_mgr == 'yum')
+
+- name: ensure curl is at the latest version (apt)
+  apt: name=curl state=latest
+  when: (provisioning and ansible_pkg_mgr == 'apt')
 
 - name: push add_guest_user.sh
   template: src=add_guest_user.sh dest=/tmp/add_guest_user.sh mode=0755
