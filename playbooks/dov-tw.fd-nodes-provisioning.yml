@@ -1,0 +1,12 @@
+---
+- hosts: feeder-nodes
+  remote_user: ansible
+  sudo: yes
+
+  vars:
+    docker_overlay: true
+    docker_provisioning: false
+    provisioning: true
+
+  roles:
+    - tw.fd
