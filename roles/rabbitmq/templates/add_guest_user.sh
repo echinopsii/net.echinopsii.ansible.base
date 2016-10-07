@@ -6,7 +6,7 @@ while [ $ret -ne 0 ]
 do
 	curl --user admin:admin -H "Content-Type: application/json" -X PUT -d '{"password":"guest","tags":"None"}' http://{{ansible_eth0.ipv4.address}}:15672/api/users/guest
 	ret=$?
-	if [[ $i -lt 4 ]] && [[ $ret -ne 0 ]]; then
+	if [[ $i -lt 15 ]] && [[ $ret -ne 0 ]]; then
 		sleep 2
 	else
 		break;
