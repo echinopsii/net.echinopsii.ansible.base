@@ -1,28 +1,28 @@
 ---
 - name: ensure git is at the latest version (yum)
   yum: name=git state=latest
-  when: (provisioning and ansible_pkg_mgr == 'yum')
+  when: (provisioning and ansible_pkg_mgr == 'yum' and docker_provisioning)
 
 - name: ensure git is at the latest version (apt)
   apt: name=git state=latest
-  when: (provisioning and ansible_pkg_mgr == 'apt')  
+  when: (provisioning and ansible_pkg_mgr == 'apt' and docker_provisioning)  
 
 - name: add sslVerify=false
   command: git config --global http.sslverify "false"
-  when: provisioning
+  when: (provisioning and docker_provisioning)
 
 - name: add /ECHINOPSII/ansible directory
   command: mkdir -p /ECHINOPSII/ansible
   ignore_errors: yes
-  when: provisioning
+  when: (provisioning and docker_provisioning)
 
 - name: clone net.echinopsii.docker.base
   git: repo=http://stash.echinopsii.net/scm/necii/docker.base.git dest=/ECHINOPSII/ansible/docker.base clone=yes update=yes
-  when: provisioning
+  when: (provisioning and docker_provisioning)
 
 - name: chown /ECHINOPSII/ansible
   command: chown -R ansible.ansible /ECHINOPSII/ansible
-  when: provisioning
+  when: (provisioning and docker_provisioning)
 
 - name: remove fedora.21.systemd.tw.ri docker container
   docker:
@@ -39,7 +39,7 @@
   shell: rm /ri.env
   when: not provisioning
 
-- name: run fedora.21.systemd.tw.ri docker container
+- name: run fedora.21.systemd.tw.ri docker container (no docker_overlay)
   docker: 
    name: "{{hostvars[inventory_hostname]['riNodeName']}}"
    hostname: "{{hostvars[inventory_hostname]['riNodeName'] + '.' + ansible_fqdn}}"
@@ -48,7 +48,19 @@
    - /sys/fs/cgroup:/sys/fs/cgroup:ro
    - /ri.env:/ri.env
    image: echinopsii/fedora.21.systemd.tw.ri
-  when: provisioning
+  when: (provisioning and not docker_overlay)
+
+- name: run fedora.21.systemd.tw.ri docker container (docker_overlay)
+  docker:
+   name: "{{hostvars[inventory_hostname]['riNodeName']}}"
+   hostname: "{{hostvars[inventory_hostname]['riNodeName'] + '.' + ansible_fqdn}}"
+   privileged: yes
+   net: "{{hostvars[inventory_hostname]['riLocalSubnetName']}}"
+   volumes:
+   - /sys/fs/cgroup:/sys/fs/cgroup:ro
+   - /ri.env:/ri.env
+   image: echinopsii/fedora.21.systemd.tw.ri
+  when: (provisioning and docker_overlay)
 
 - name: clean docker env
   command: /usr/bin/dockerKlean
