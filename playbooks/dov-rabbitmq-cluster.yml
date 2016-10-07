@@ -3,5 +3,8 @@
   remote_user: ansible
   sudo: yes
 
+  vars:
+    docker_overlay: true
+
   roles:
     - rabbitmq-clu
