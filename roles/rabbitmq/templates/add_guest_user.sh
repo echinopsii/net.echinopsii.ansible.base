@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ret=-1
 i="0"
