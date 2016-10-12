@@ -1,0 +1,4 @@
+---
+db_user: "wordpress"
+db_pwd: "wp_secret!"
+provisioning: true
