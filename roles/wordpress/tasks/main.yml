@@ -1,8 +1,8 @@
 ---
 - name: provide wordpress.env
-  template: src=wordpress.env dest={{hostvars[inventory_hostname]['wwwPath']}} mode=0755
+  template: src=wordpress.env dest="{{hostvars[inventory_hostname]['wwwPath']}}" mode=0755
 
 - name: configure wordpress db
   shell: ./wordpress_db_init.sh
   args:
-    chdir: {{hostvars[inventory_hostname]['wwwPath']}}
+    chdir: "{{hostvars[inventory_hostname]['wwwPath']}}"
