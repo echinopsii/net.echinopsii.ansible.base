@@ -1,7 +1,7 @@
 ---
 - hosts: rabbitmq-nodes
   remote_user: ansible
-  sudo: yes
+  become: true
 
   vars:
     docker_overlay: true

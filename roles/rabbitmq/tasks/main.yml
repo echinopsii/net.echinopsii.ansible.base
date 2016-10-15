@@ -1,4 +1,8 @@
 ---
+- name: ensure git is at the latest version (dnf)
+  dnf: name=git state=latest
+  when: (provisioning and ansible_pkg_mgr == 'dnf' and docker_build)
+
 - name: ensure git is at the latest version (yum)
   yum: name=git state=latest
   when: (provisioning and ansible_pkg_mgr == 'yum' and docker_build)
@@ -25,7 +29,7 @@
   when: (provisioning and docker_build)
 
 - name: remove rabbitmq:3.3.5 docker container
-  docker:
+  docker_container:
    name: "{{hostvars[inventory_hostname]['rbmqNodeName']}}"
    image: echinopsii/rabbitmq:3.3.5
    state: absent
@@ -36,17 +40,17 @@
   when: (provisioning and docker_build)
 
 - name: run rabbitmq:3.3.5 docker container
-  docker: 
+  docker_container: 
    name: "{{hostvars[inventory_hostname]['rbmqNodeName']}}"
    hostname: "{{hostvars[inventory_hostname]['rbmqNodeName'] + '.' + ansible_fqdn}}"
    ports:
    - "127.0.0.1:5000:5000" 
-   - "{{ansible_eth0.ipv4.address + ':15672:15672'}}"
-   - "{{ansible_eth0.ipv4.address + ':5672:5672'}}"
-   - "{{ansible_eth0.ipv4.address + ':1833:1833'}}"
-   - "{{ansible_eth0.ipv4.address + ':61613:61613'}}"
-   - "{{ansible_eth0.ipv4.address + ':4369:4369'}}"
-   - "{{ansible_eth0.ipv4.address + ':44001:44001'}}"
+   - "{{ansible_fqdn + ':15672:15672'}}"
+   - "{{ansible_fqdn + ':5672:5672'}}"
+   - "{{ansible_fqdn + ':1833:1833'}}"
+   - "{{ansible_fqdn + ':61613:61613'}}"
+   - "{{ansible_fqdn + ':4369:4369'}}"
+   - "{{ansible_fqdn + ':44001:44001'}}"
    image: echinopsii/rabbitmq:3.3.5
    env:
        RABBITMQ_ADMIN_PASSWORD: admin
@@ -63,7 +67,7 @@
   when: (provisioning and docker_overlay and hostvars[inventory_hostname]['rabbitmqCluPrimaryNode'] == hostvars[inventory_hostname]['rbmqNodeName'])
 
 - name: create docker rabbitmq container on overlay network
-  command: docker create -p 127.0.0.1:5000:5000 -p {{ansible_eth0.ipv4.address + ':15672:15672'}} --env RABBITMQ_ADMIN_PASSWORD=admin --network={{hostvars[inventory_hostname]['rbmqOverlaySubnetName']}} --hostname {{hostvars[inventory_hostname]['rbmqNodeName']}} --name {{hostvars[inventory_hostname]['rbmqNodeName']}} echinopsii/rabbitmq:3.3.5
+  command: docker create -p 127.0.0.1:5000:5000 -p {{ansible_fqdn + ':15672:15672'}} --env RABBITMQ_ADMIN_PASSWORD=admin --network={{hostvars[inventory_hostname]['rbmqOverlaySubnetName']}} --hostname {{hostvars[inventory_hostname]['rbmqNodeName']}} --name {{hostvars[inventory_hostname]['rbmqNodeName']}} echinopsii/rabbitmq:3.3.5
   when: (provisioning and docker_overlay)
 
 - name: connect docker rabbitmq container to local network
@@ -73,6 +77,10 @@
 - name: start docker rabbitmq container
   command: docker start {{hostvars[inventory_hostname]['rbmqNodeName']}}
   when: (provisioning and docker_overlay)
+
+- name: ensure curl is at the latest version (dnf)
+  dnf: name=curl state=latest
+  when: (provisioning and ansible_pkg_mgr == 'dnf')
 
 - name: ensure curl is at the latest version (yum)
   yum: name=curl state=latest

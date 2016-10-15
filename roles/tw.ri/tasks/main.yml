@@ -1,4 +1,8 @@
 ---
+- name: ensure git is at the latest version (dnf)
+  dnf: name=git state=latest
+  when: (provisioning and ansible_pkg_mgr == 'dnf' and docker_provisioning)
+
 - name: ensure git is at the latest version (yum)
   yum: name=git state=latest
   when: (provisioning and ansible_pkg_mgr == 'yum' and docker_provisioning)
@@ -25,7 +29,7 @@
   when: (provisioning and docker_provisioning)
 
 - name: remove fedora.21.systemd.tw.ri docker container
-  docker:
+  docker_container:
    name: "{{hostvars[inventory_hostname]['riNodeName']}}"
    image: echinopsii/fedora.21.systemd.tw.ri
    state: absent
@@ -40,7 +44,7 @@
   when: not provisioning
 
 - name: run fedora.21.systemd.tw.ri docker container (no docker_overlay)
-  docker: 
+  docker_container: 
    name: "{{hostvars[inventory_hostname]['riNodeName']}}"
    hostname: "{{hostvars[inventory_hostname]['riNodeName'] + '.' + ansible_fqdn}}"
    privileged: yes
@@ -51,7 +55,7 @@
   when: (provisioning and not docker_overlay)
 
 - name: run fedora.21.systemd.tw.ri docker container (docker_overlay)
-  docker:
+  docker_container:
    name: "{{hostvars[inventory_hostname]['riNodeName']}}"
    hostname: "{{hostvars[inventory_hostname]['riNodeName'] + '.' + ansible_fqdn}}"
    privileged: yes
