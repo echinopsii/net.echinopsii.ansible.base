@@ -1,0 +1,7 @@
+---
+- hosts: ariane-demo
+  remote_user: ansible
+  become: true
+
+  roles:
+    - ariane-demo
