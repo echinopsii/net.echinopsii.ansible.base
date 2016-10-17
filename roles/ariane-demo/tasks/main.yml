@@ -101,7 +101,14 @@
   docker_container:
    name: "{{hostvars[inventory_hostname]['arianeNATSNodeName']}}"
    hostname: "{{hostvars[inventory_hostname]['arianeNATSNodeName'] + '.' + ansible_fqdn}}"
-   entrypoint: "/gnatsd -c /gnatsd.conf --user ariane --pass password"
+   entrypoint: 
+   - /gnatsd
+   - -c
+   - /gnatsd.conf
+   - --user
+   - ariane
+   - --pass
+   - password
    ports:
    - "0.0.0.0:8222:8222"
    - "0.0.0.0:4222:4222"
@@ -144,6 +151,15 @@
    image: echinopsii/ariane.community:frt.SNAPSHOT
    state: absent
   when: not provisioning
+
+# TODO: raise this error to ansible community
+# - name: pull docker image
+#   docker_image:
+#    name: echinopsii/ariane.community:frt.SNAPSHOT
+
+- name: pull docker image
+  shell: docker pull echinopsii/ariane.community:frt.SNAPSHOT
+  when: provisioning
 
 - name: run ariane frt docker container
   docker_container:
