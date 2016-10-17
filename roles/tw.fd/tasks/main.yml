@@ -59,7 +59,8 @@
    name: "{{hostvars[inventory_hostname]['fdNodeName']}}"
    hostname: "{{hostvars[inventory_hostname]['fdNodeName'] + '.' + ansible_fqdn}}"
    privileged: yes
-   net: "{{hostvars[inventory_hostname]['fdLocalSubnetName']}}"
+   networks:
+   - name: "{{hostvars[inventory_hostname]['fdLocalSubnetName']}}"
    volumes:
    - /sys/fs/cgroup:/sys/fs/cgroup:ro
    - /fd.env:/fd.env
