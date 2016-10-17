@@ -55,7 +55,7 @@
   when: (provisioning and not docker_overlay)
 
 - name: run fedora.21.systemd.tw.fo docker container (docker_overlay)
-  docker:
+  docker_container:
    name: "{{hostvars[inventory_hostname]['foNodeName']}}"
    hostname: "{{hostvars[inventory_hostname]['foNodeName'] + '.' + ansible_fqdn}}"
    privileged: yes
