@@ -45,12 +45,12 @@
    hostname: "{{hostvars[inventory_hostname]['rbmqNodeName'] + '.' + ansible_fqdn}}"
    ports:
    - "127.0.0.1:5000:5000" 
-   - "{{ansible_fqdn + ':15672:15672'}}"
-   - "{{ansible_fqdn + ':5672:5672'}}"
-   - "{{ansible_fqdn + ':1833:1833'}}"
-   - "{{ansible_fqdn + ':61613:61613'}}"
-   - "{{ansible_fqdn + ':4369:4369'}}"
-   - "{{ansible_fqdn + ':44001:44001'}}"
+   - "0.0.0.0:15672:15672"
+   - "0.0.0.0:5672:5672"
+   - "0.0.0.0:1833:1833"
+   - "0.0.0.0:61613:61613"
+   - "0.0.0.0:4369:4369"
+   - "0.0.0.0:44001:44001"
    image: echinopsii/rabbitmq:3.3.5
    env:
        RABBITMQ_ADMIN_PASSWORD: admin
@@ -67,7 +67,7 @@
   when: (provisioning and docker_overlay and hostvars[inventory_hostname]['rabbitmqCluPrimaryNode'] == hostvars[inventory_hostname]['rbmqNodeName'])
 
 - name: create docker rabbitmq container on overlay network
-  command: docker create -p 127.0.0.1:5000:5000 -p {{ansible_fqdn + ':15672:15672'}} --env RABBITMQ_ADMIN_PASSWORD=admin --network={{hostvars[inventory_hostname]['rbmqOverlaySubnetName']}} --hostname {{hostvars[inventory_hostname]['rbmqNodeName']}} --name {{hostvars[inventory_hostname]['rbmqNodeName']}} echinopsii/rabbitmq:3.3.5
+  command: docker create -p 127.0.0.1:5000:5000 -p 0.0.0.0:15672:15672 --env RABBITMQ_ADMIN_PASSWORD=admin --network={{hostvars[inventory_hostname]['rbmqOverlaySubnetName']}} --hostname {{hostvars[inventory_hostname]['rbmqNodeName']}} --name {{hostvars[inventory_hostname]['rbmqNodeName']}} echinopsii/rabbitmq:3.3.5
   when: (provisioning and docker_overlay)
 
 - name: connect docker rabbitmq container to local network
