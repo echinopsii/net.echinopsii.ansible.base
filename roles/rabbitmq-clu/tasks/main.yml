@@ -33,3 +33,4 @@
 
 - name: clean
   shell: rm /tmp/*.sh /tmp/*.json
+  when: not hostvars[inventory_hostname]['rabbitmqCluPrimaryNode'] == hostvars[inventory_hostname]['rbmqNodeName']
