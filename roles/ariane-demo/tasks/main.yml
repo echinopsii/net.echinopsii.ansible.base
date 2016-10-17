@@ -40,7 +40,7 @@
    name: "{{hostvars[inventory_hostname]['arianeIDMNodeName']}}"
    hostname: "{{hostvars[inventory_hostname]['arianeIDMNodeName'] + '.' + ansible_fqdn}}"
    ports:
-   - "{{ansible_fqdn + ':3316:3306'}}"
+   - "0.0.0.0:3316:3306"
    image: mariadb 
    env:
        MYSQL_ROOT_PASSWORD: "YHN444rty"
@@ -71,7 +71,7 @@
    name: "{{hostvars[inventory_hostname]['arianeDIRNodeName']}}"
    hostname: "{{hostvars[inventory_hostname]['arianeDIRNodeName'] + '.' + ansible_fqdn}}"
    ports:
-   - "{{ansible_fqdn + ':3326:3306'}}"
+   - "0.0.0.0:3326:3306"
    image: mariadb
    env:
        MYSQL_ROOT_PASSWORD: "YHN444rty"
@@ -103,8 +103,8 @@
    hostname: "{{hostvars[inventory_hostname]['arianeNATSNodeName'] + '.' + ansible_fqdn}}"
    entrypoint: "/gnatsd -c /gnatsd.conf --user ariane --pass password"
    ports:
-   - "{{ansible_fqdn + ':8222:8222'}}"
-   - "{{ansible_fqdn + ':4222:4222'}}"
+   - "0.0.0.0:8222:8222"
+   - "0.0.0.0:4222:4222"
    image: nats
    env:
        ARIANE_OS_TYPE_NAME: "Linux Debian 8"
@@ -135,7 +135,7 @@
         ARIANE_MOM_USER: "ariane"
         ARIANE_MOM_PASSWORD: "password"
     ports:
-    - "{{ansible_fqdn + ':7474:7474'}}"
+    - "0.0.0.0:7474:7474"
   when: (provisioning and not docker_overlay)
 
 - name: remove ariane frt docker container
@@ -156,7 +156,7 @@
         ARIANE_MOM_USER: "ariane"
         ARIANE_MOM_PASSWORD: "ariane"
     ports:
-    - "{{ansible_fqdn + ':6969:6969'}}"
+    - "0.0.0.0:6969:6969"
   when: (provisioning and not docker_overlay)
 
 - name: clean docker env
