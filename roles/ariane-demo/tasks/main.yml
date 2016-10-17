@@ -166,13 +166,16 @@
     name: "{{hostvars[inventory_hostname]['arianeFRTNodeName']}}"
     image: echinopsii/ariane.community:frt.SNAPSHOT
     env:
-        ARIANE_IDM_HOST: "{{ansible_fqdn}}"
-        ARIANE_DIRECTORY_HOST: "{{ansible_fqdn}}"
+        ARIANE_IDM_HOST: "ariane-idm"
+        ARIANE_DIRECTORY_HOST: "ariane-dir"
         ARIANE_NATS_HOST: "{{ansible_fqdn}}"
         ARIANE_MOM_USER: "ariane"
         ARIANE_MOM_PASSWORD: "ariane"
     ports:
     - "0.0.0.0:6969:6969"
+    links:
+    - ariane-idm:ariane-idm
+    - ariane-dir:ariane-dir
   when: (provisioning and not docker_overlay)
 
 - name: clean docker env
