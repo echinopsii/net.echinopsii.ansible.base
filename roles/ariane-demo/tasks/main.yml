@@ -170,7 +170,7 @@
         ARIANE_DIRECTORY_HOST: "ariane-dir"
         ARIANE_NATS_HOST: "{{ansible_fqdn}}"
         ARIANE_MOM_USER: "ariane"
-        ARIANE_MOM_PASSWORD: "ariane"
+        ARIANE_MOM_PASSWORD: "password"
     ports:
     - "0.0.0.0:6969:6969"
     links:
