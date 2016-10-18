@@ -136,6 +136,7 @@
 - name: run ariane mms docker container
   docker_container:
     name: "{{hostvars[inventory_hostname]['arianeMMSNodeName']}}"
+    hostname: "{{hostvars[inventory_hostname]['arianeMMSNodeName']}}"
     image: echinopsii/ariane.community:mms.SNAPSHOT
     env:
         ARIANE_NATS_HOST: "{{ansible_fqdn}}"
@@ -164,6 +165,7 @@
 - name: run ariane frt docker container
   docker_container:
     name: "{{hostvars[inventory_hostname]['arianeFRTNodeName']}}"
+    hostname: "{{hostvars[inventory_hostname]['arianeFRTNodeName']}}"
     image: echinopsii/ariane.community:frt.SNAPSHOT
     env:
         ARIANE_IDM_HOST: "ariane-idm"
