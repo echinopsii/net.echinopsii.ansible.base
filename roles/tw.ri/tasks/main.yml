@@ -46,7 +46,7 @@
 - name: run fedora.21.systemd.tw.ri docker container (no docker_overlay)
   docker_container: 
    name: "{{hostvars[inventory_hostname]['riNodeName']}}"
-   hostname: "{{hostvars[inventory_hostname]['riNodeName'] + '.' + ansible_fqdn}}"
+   hostname: "{{hostvars[inventory_hostname]['riNodeName'] + '.' + ansible_hostname  + '.' + ansible_dns['search'][0]}}"
    privileged: yes
    volumes: 
    - /sys/fs/cgroup:/sys/fs/cgroup:ro
@@ -57,7 +57,7 @@
 - name: run fedora.21.systemd.tw.ri docker container (docker_overlay)
   docker_container:
    name: "{{hostvars[inventory_hostname]['riNodeName']}}"
-   hostname: "{{hostvars[inventory_hostname]['riNodeName'] + '.' + ansible_fqdn}}"
+   hostname: "{{hostvars[inventory_hostname]['riNodeName'] + '.' + ansible_hostname  + '.' + ansible_dns['search'][0] }}"
    privileged: yes
    net: "{{hostvars[inventory_hostname]['riLocalSubnetName']}}"
    volumes:
