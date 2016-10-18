@@ -46,7 +46,7 @@
 - name: run fedora.21.systemd.tw.bo docker container (no docker_overlay)
   docker_container: 
    name: "{{hostvars[inventory_hostname]['boNodeName']}}"
-   hostname: "{{hostvars[inventory_hostname]['boNodeName'] + '.' + ansible_fqdn}}"
+   hostname: "{{hostvars[inventory_hostname]['boNodeName'] + '.' + ansible_hostname  + '.' + ansible_dns['search'][0]}}"
    privileged: yes
    volumes: 
    - /sys/fs/cgroup:/sys/fs/cgroup:ro
@@ -55,7 +55,7 @@
   when: (provisioning and not docker_overlay)
 
 - name: create fedora.21.systemd.tw.bo docker container (docker_overlay)
-  command: docker create --name {{hostvars[inventory_hostname]['boNodeName']}} --hostname "{{hostvars[inventory_hostname]['boNodeName'] + '.' + ansible_fqdn}}" --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v /bo.env:/bo.env --network={{hostvars[inventory_hostname]['cassOverlaySubnetName']}} echinopsii/fedora.21.systemd.tw.bo
+  command: docker create --name {{hostvars[inventory_hostname]['boNodeName']}} --hostname "{{hostvars[inventory_hostname]['boNodeName'] + '.' + ansible_hostname  + '.' + ansible_dns['search'][0]}}" --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v /bo.env:/bo.env --network={{hostvars[inventory_hostname]['cassOverlaySubnetName']}} echinopsii/fedora.21.systemd.tw.bo
   when: (provisioning and docker_overlay)
 
 - name: connect bo container to local network
