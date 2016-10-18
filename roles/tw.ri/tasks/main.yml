@@ -59,7 +59,8 @@
    name: "{{hostvars[inventory_hostname]['riNodeName']}}"
    hostname: "{{hostvars[inventory_hostname]['riNodeName'] + '.' + ansible_hostname  + '.' + ansible_dns['search'][0] }}"
    privileged: yes
-   net: "{{hostvars[inventory_hostname]['riLocalSubnetName']}}"
+   networks:
+   - name: "{{hostvars[inventory_hostname]['riLocalSubnetName']}}"
    volumes:
    - /sys/fs/cgroup:/sys/fs/cgroup:ro
    - /ri.env:/ri.env

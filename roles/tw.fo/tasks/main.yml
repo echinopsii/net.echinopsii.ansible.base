@@ -55,11 +55,12 @@
   when: (provisioning and not docker_overlay)
 
 - name: run fedora.21.systemd.tw.fo docker container (docker_overlay)
-  docker:
+  docker_container:
    name: "{{hostvars[inventory_hostname]['foNodeName']}}"
    hostname: "{{hostvars[inventory_hostname]['foNodeName'] + '.' + ansible_hostname  + '.' + ansible_dns['search'][0]}}"
    privileged: yes
-   net: "{{hostvars[inventory_hostname]['foLocalSubnetName']}}"
+   networks:
+   - name: "{{hostvars[inventory_hostname]['foLocalSubnetName']}}"
    volumes:
    - /sys/fs/cgroup:/sys/fs/cgroup:ro
    - /fo.env:/fo.env

@@ -59,7 +59,8 @@
    name: "{{hostvars[inventory_hostname]['moNodeName']}}"
    hostname: "{{hostvars[inventory_hostname]['moNodeName'] + '.' + ansible_hostname  + '.' + ansible_dns['search'][0] }}"
    privileged: yes
-   net: "{{hostvars[inventory_hostname]['moLocalSubnetName']}}"
+   networks:
+   - name: "{{hostvars[inventory_hostname]['moLocalSubnetName']}}"
    volumes:
    - /sys/fs/cgroup:/sys/fs/cgroup:ro
    - /mo.env:/mo.env
