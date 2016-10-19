@@ -187,7 +187,7 @@
   copy: src=../files/ariane-dir.sql dest=/tmp/ariane-dir.sql
 
 - name: push ariane-db-init.sh script
-  copy: src=../files/ariane-db-init.sh dest=/tmp/ariane-db-init.sh
+  copy: src=../files/ariane-db-init.sh dest=/tmp/ariane-db-init.sh mode=0755
 
 - pause: seconds=15 prompt="wait to make sure ariane-frt did the databases initialization"
 
