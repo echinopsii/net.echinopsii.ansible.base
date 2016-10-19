@@ -1,3 +1,4 @@
+USE ariane_directory;
 INSERT IGNORE INTO `company` VALUES (5,'The Debian Libre Community','Debian',0),(6,'The Cassandra Company','Datastax',1),(7,'The New Cacti Company','echinopsii',0);
 INSERT IGNORE INTO `environment` VALUES (2,'The KernelPanic Environment','DEV',13,'1aa818');
 INSERT IGNORE INTO `team` VALUES (1,'054d31','Unix server support team','SRV UNIX',39),(2,'11301f','Middleware bus support team','MDW BUS',25),(6,'a68ad1','BackOfficeService OPS team','BOSops',5),(7,'077810','MiddleOfficeService OPS team','MOSops',5),(8,'ab71a3','FrontOfficeService OPS team','FOSops',10),(9,'6b2a33','RiskService OPS team','RISops',13),(10,'aed6b1','FeederService OPS team','FEEDops',10),(11,'96348e','Cassandra OPS team','CASSops',9),(12,'e0724a','Ariane OPS team','ARops',2),(13,'cc6c4a','Ariane DEV team','ARdev',8),(14,'137bd1','Neo4J DBA team','Neo4J DBA',6);
