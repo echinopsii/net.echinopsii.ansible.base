@@ -189,7 +189,7 @@
 - pause: seconds=15 prompt="wait to make sure ariane-frt did the databases initialization"
 
 - name: insert directory data
-  shell: docker run -it --name mysqlcli --link ariane-dir:ariane-dir -v /tmp:/tmp mysql sh -c "exec mysql -h ariane-dir -P 3306 -uariane -ppassword < ariane-dir.sql" 1>/dev/null 2>&1 
+  shell: docker run -it --name mysqlcli --link ariane-dir:ariane-dir -v /tmp:/tmp mysql sh -c "exec mysql -h ariane-dir -P 3306 -uariane -ppassword < /tmp/ariane-dir.sql" 1>/dev/null 2>&1 
 
 - name: clean docker env
   command: /usr/bin/dockerKlean
