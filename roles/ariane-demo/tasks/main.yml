@@ -183,6 +183,9 @@
     - ariane-dir:ariane-dir
   when: (provisioning and not docker_overlay)
 
+- name: push ariane-idm.sql insert script
+  copy: src=../files/ariane-idm.sql dest=/tmp/ariane-idm.sql
+
 - name: push ariane-dir.sql insert script
   copy: src=../files/ariane-dir.sql dest=/tmp/ariane-dir.sql
 
