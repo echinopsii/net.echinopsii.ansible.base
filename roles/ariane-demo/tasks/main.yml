@@ -169,7 +169,7 @@
     image: echinopsii/ariane.community:frt.SNAPSHOT
     networks:
     - name: "bridge"
-    - name: {{hostvars[inventory_hostname]['rbmqOverlaySubnetName']}}
+    - name: "{{hostvars[inventory_hostname]['rbmqOverlaySubnetName']}}"
     env:
         ARIANE_IDM_HOST: "ariane-idm"
         ARIANE_DIRECTORY_HOST: "ariane-dir"
