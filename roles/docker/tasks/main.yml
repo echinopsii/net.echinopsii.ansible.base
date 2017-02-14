@@ -9,10 +9,34 @@
 
 - name: upgrade all packages (apt)
   apt: upgrade=yes
-  when: (docker_provisioning and ansible_pkg_mgr == 'apt')  
+  when: (docker_provisioning and ansible_pkg_mgr == 'apt')
+
+- name: ensure docker is uninstalled (apt)
+  apt: name=docker.io state=absent
+  when: (docker_deprovisioning and ansible_pkg_mgr == 'apt')
+
+- name: ensure docker is uninstalled (yum)
+  yum: name=docker-io state=absent
+  when: (docker_deprovisioning and ansible_pkg_mgr == 'yum')
+
+- name: ensure docker is uninstalled (dnf)
+  yum: name=docker-engine state=absent
+  when: (docker_deprovisioning and ansible_pkg_mgr == 'dnf')
+
+- name: ensure dnf-plugins-core is at the latest version (dnf)
+  dnf: name=dnf-plugins-core state=latest
+  when: (docker_provisioning and ansible_pkg_mgr == 'dnf')
+
+- name: add official docker dnf repos (dnf)
+  command: dnf config-manager --add-repo https://docs.docker.com/engine/installation/linux/repo_files/fedora/docker.repo
+  when: (docker_provisioning and ansible_pkg_mgr == 'dnf')
+
+- name: update package index (dnf)
+  command: dnf makecache fast
+  when: (docker_provisioning and ansible_pkg_mgr == 'dnf')
 
 - name: ensure docker is at the latest version (dnf)
-  dnf: name=docker-io state=latest
+  dnf: name=docker-engine state=latest
   when: (docker_provisioning and ansible_pkg_mgr == 'dnf')
 
 - name: ensure docker is at the latest version (yum)
@@ -25,13 +49,15 @@
 
 - name: ensure docker is enabled
   service: name=docker enabled=yes
+  when: not docker_deprovisioning
 
 - name: ensure docker is started
   service: name=docker state=started
+  when: not docker_deprovisioning
 
 - name: provide right on docker.sock to docker group
   command: chown root.docker /var/run/docker.sock
-  when: docker_provisioning
+  when: not docker_deprovisioning
 
 - name: ensure python-pip is at the latest version (dnf)
   dnf: name=python-pip state=latest
@@ -50,7 +76,7 @@
   when: docker_provisioning
 
 - name: install or reinstall docker-compose
-  shell: curl -L https://github.com/docker/compose/releases/download/1.1.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+  shell: curl -L https://github.com/docker/compose/releases/download/1.10.0/docker-compose-$(uname -s)-$(uname -m) > /usr/local/bin/docker-compose
   when: docker_provisioning
 
 - name: add exec right on docker-compose

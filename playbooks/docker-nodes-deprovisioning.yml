@@ -2,9 +2,9 @@
 - hosts: docker-servers
   remote_user: ansible
   become: true
-
+  
   vars:
-    docker_provisioning: true
+    docker_deprovisioning: true
 
   roles:
     - docker
