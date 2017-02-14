@@ -51,6 +51,17 @@
    volumes: 
    - /sys/fs/cgroup:/sys/fs/cgroup:ro
    - /fo.env:/fo.env
+   env:
+       ARIANE_OS_TYPE_NAME: "Linux Fedora 21"
+       ARIANE_OS_TYPE_ARCHITECTURE: "x86_64"
+       ARIANE_OS_TYPE_SUPPORTING_COMPANY_NAME: "Red Hat"
+       ARIANE_OS_TYPE_SUPPORTING_COMPANY_DESCRIPTION: "Red Hat Inc."
+       ARIANE_TEAM_NAME: "FOSops"
+       ARIANE_TEAM_COLOR_CODE: "ab71a3"
+       ARIANE_TEAM_DESCRIPTION: "FrontOfficeService OPS team"
+       ARIANE_ENV_NAME: "DEV"
+       ARIANE_ENV_COLOR_CODE: "DEV environment"
+       ARIANE_ENV_DESCRIPTION: "cb6c4a"
    image: echinopsii/fedora.21.systemd.tw.fo
   when: (provisioning and not docker_overlay)
 
